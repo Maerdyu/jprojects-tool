@@ -1,13 +1,16 @@
 package com.maerdyu.jprojectstool.utils;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.maerdyu.jprojectstool.constants.FilesEnum;
 import com.maerdyu.jprojectstool.dto.Project;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,8 +29,33 @@ public class DataUtil {
         File file = new File(path);
         File[] files = file.listFiles();
         assert files != null;
-        List<Project> projects = Stream.of(files).filter(File::isDirectory).filter(GitUtil::isGitRepo).map(f -> Project.builder().path(f.getPath()).build()).collect(Collectors.toList());
-        DataUtil.writeFile(JSONObject.toJSONString(projects), FilesEnum.PROJECTS.getName());
+        List<Project> projects = Stream.of(files).filter(File::isDirectory).filter(GitInfoUtil::isGitRepo).map(DataUtil::buildProjectByFile).collect(Collectors.toList());
+        if(loadConf == null || loadConf){
+            DataUtil.writeFile(JSONObject.toJSONString(projects), FilesEnum.PROJECTS.getName());
+        }
         return projects;
+    }
+
+    private static Project buildProjectByFile(File file) {
+        Project.ProjectBuilder builder = Project.builder();
+        builder.path(file.getPath()).name(file.getName());
+        String remoteUrl = GitInfoUtil.getRemoteUrl(file);
+        builder.url(remoteUrl).isPrivate(true);
+        if(remoteUrl != null && remoteUrl.contains("http")){
+            builder.isPrivate(false);
+        }
+        builder.branches(GitInfoUtil.getBranchs(file));
+        return builder.build();
+    }
+
+    public static String getProperties(String key) {
+        Properties properties = new Properties();
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("/jproject_conf/jprojects.properties"));
+            properties.load(bufferedReader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties.getProperty(key);
     }
 }

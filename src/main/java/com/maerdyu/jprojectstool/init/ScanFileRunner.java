@@ -1,13 +1,15 @@
 package com.maerdyu.jprojectstool.init;
 
+import com.alibaba.fastjson.JSONObject;
 import com.maerdyu.jprojectstool.dto.Project;
+import com.maerdyu.jprojectstool.service.GitOperateService;
 import com.maerdyu.jprojectstool.utils.DataUtil;
-import com.maerdyu.jprojectstool.utils.GitUtil;
-import org.springframework.beans.factory.annotation.Value;
+import com.maerdyu.jprojectstool.utils.GitInfoUtil;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -17,14 +19,15 @@ import java.util.List;
 @Component
 public class ScanFileRunner implements ApplicationRunner {
 
-    @Value("${filepath}")
-    private String filePath;
+    @Resource
+    private GitOperateService gitOperateService;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        List<Project> projects = DataUtil.scanFile(filePath, true);
-//        projects.forEach(GitUtil::pull);
-        projects.forEach(GitUtil::printRemote);
+    public void run(ApplicationArguments args) {
+        String filepath = DataUtil.getProperties("filepath");
+        List<Project> projects = DataUtil.scanFile(filepath, true);
+        projects.forEach(GitInfoUtil::listRemote);
+//        System.out.println(JSONObject.toJSONString(projects));
     }
 
 }
