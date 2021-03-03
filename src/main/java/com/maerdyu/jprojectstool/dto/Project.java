@@ -17,4 +17,5 @@ public class Project {
     private Boolean isPrivate;
     private List<Branch> branches;
     private String url;
+    private String status;
 }

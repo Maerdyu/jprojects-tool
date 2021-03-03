@@ -1,10 +1,10 @@
 package com.maerdyu.jprojectstool.utils;
 
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.maerdyu.jprojectstool.dto.Branch;
 import com.maerdyu.jprojectstool.dto.Project;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -12,9 +12,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,50 +56,12 @@ public class GitInfoUtil {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         try (Repository repo = builder.readEnvironment().findGitDir(file).build();
              Git git = new Git(repo)) {
-            List<Ref> call = git.branchList().call();
-            return call.stream().peek(ref -> System.out.println("Branch: " + ref + " " + ref.getName() + " " + ref.getObjectId().getName())).map(f -> Branch.builder().name(f.getName()).build()).collect(Collectors.toList());
+            List<Ref> call = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+            return call.stream().map(f -> Branch.builder().name(f.getName()).build()).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static void listRemote(Project project) {
-
-        try (Repository repo = genRepoByPath(project);
-             Git git = new Git(repo)) {
-            Collection<Ref> refs = Git.lsRemoteRepository()
-                    .setHeads(true)
-                    .setTags(true)
-                    .setRemote(project.getUrl())
-                    .call();
-
-            for (Ref ref : refs) {
-                System.out.println("Ref: " + ref);
-            }
-
-            final Map<String, Ref> map = Git.lsRemoteRepository()
-                    .setHeads(true)
-                    .setTags(true)
-                    .setRemote(project.getUrl())
-                    .callAsMap();
-
-            System.out.println("As map");
-            for (Map.Entry<String, Ref> entry : map.entrySet()) {
-                System.out.println("Key: " + entry.getKey() + ", Ref: " + entry.getValue());
-            }
-
-            refs = Git.lsRemoteRepository()
-                    .setRemote(project.getUrl())
-                    .call();
-
-            System.out.println("All refs");
-            for (Ref ref : refs) {
-                System.out.println("Ref: " + ref);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public static Repository genRepoByPath(Project project) throws IOException {

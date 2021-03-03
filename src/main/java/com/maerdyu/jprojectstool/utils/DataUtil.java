@@ -9,7 +9,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,5 +59,14 @@ public class DataUtil {
             e.printStackTrace();
         }
         return properties.getProperty(key);
+    }
+
+    public static Map<String, String> getProperties(List<String> keys){
+        Map<String, String> pMap = new HashMap<>();
+        keys.forEach(k->{
+            String properties = getProperties(k);
+            pMap.put(k, properties);
+        });
+        return pMap;
     }
 }
