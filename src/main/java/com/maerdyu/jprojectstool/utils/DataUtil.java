@@ -3,6 +3,7 @@ package com.maerdyu.jprojectstool.utils;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.maerdyu.jprojectstool.constants.FilesEnum;
+import com.maerdyu.jprojectstool.constants.ProjectStatus;
 import com.maerdyu.jprojectstool.dto.Project;
 
 import java.io.BufferedReader;
@@ -40,7 +41,7 @@ public class DataUtil {
 
     private static Project buildProjectByFile(File file) {
         Project.ProjectBuilder builder = Project.builder();
-        builder.path(file.getPath()).name(file.getName());
+        builder.path(file.getPath()).name(file.getName()).status(ProjectStatus.INIT.name());
         String remoteUrl = GitInfoUtil.getRemoteUrl(file);
         builder.url(remoteUrl).isPrivate(true);
         if(remoteUrl != null && remoteUrl.contains("http")){

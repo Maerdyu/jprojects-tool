@@ -1,6 +1,7 @@
 package com.maerdyu.jprojectstool.utils;
 
 import cn.hutool.core.util.StrUtil;
+import com.maerdyu.jprojectstool.constants.GitConstants;
 import com.maerdyu.jprojectstool.dto.Branch;
 import com.maerdyu.jprojectstool.dto.Project;
 import org.eclipse.jgit.api.Git;
@@ -15,6 +16,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.maerdyu.jprojectstool.constants.GitConstants.LOCAL_GIT_PREFIX;
+import static com.maerdyu.jprojectstool.constants.GitConstants.REMOTE_GIT_PREFIX;
 
 /**
  * @author jinchun
@@ -57,7 +61,7 @@ public class GitInfoUtil {
         try (Repository repo = builder.readEnvironment().findGitDir(file).build();
              Git git = new Git(repo)) {
             List<Ref> call = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
-            return call.stream().map(f -> Branch.builder().name(f.getName()).build()).collect(Collectors.toList());
+            return call.stream().map(GitInfoUtil::buildBranchByRef).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -68,5 +72,18 @@ public class GitInfoUtil {
         File file = new File(project.getPath());
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         return builder.readEnvironment().findGitDir(file).build();
+    }
+
+    private static Branch buildBranchByRef(Ref ref) {
+        String name = ref.getName();
+        String branchName;
+        boolean isRemote = false;
+        if (name.startsWith(REMOTE_GIT_PREFIX)) {
+            branchName = name.replace(REMOTE_GIT_PREFIX, "");
+            isRemote = true;
+        } else {
+            branchName = name.replace(LOCAL_GIT_PREFIX, "");
+        }
+        return Branch.builder().name(branchName).isRemote(isRemote).build();
     }
 }
