@@ -1,7 +1,7 @@
 package com.maerdyu.jprojectstool.utils;
 
 import cn.hutool.core.io.FileUtil;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.maerdyu.jprojectstool.constants.FilesEnum;
 import com.maerdyu.jprojectstool.constants.ProjectStatus;
 import com.maerdyu.jprojectstool.dto.Project;
@@ -23,18 +23,23 @@ import java.util.stream.Stream;
  **/
 public class DataUtil {
 
+    private DataUtil() {
+    }
+
     public static void writeFile(String conf, String filePath) {
         FileUtil.writeString(conf, filePath, "UTF-8");
     }
 
     public static List<Project> scanFile(String path, Boolean loadConf) {
-        assert path != null;
+        if (path == null) {
+            throw new IllegalArgumentException("文件路径不能为空");
+        }
         File file = new File(path);
         File[] files = file.listFiles();
         assert files != null;
         List<Project> projects = Stream.of(files).filter(File::isDirectory).filter(GitInfoUtil::isGitRepo).map(DataUtil::buildProjectByFile).collect(Collectors.toList());
         if(loadConf == null || loadConf){
-            DataUtil.writeFile(JSONObject.toJSONString(projects), FilesEnum.PROJECTS.getName());
+            DataUtil.writeFile(JSON.toJSONString(projects), FilesEnum.PROJECTS.getName());
         }
         return projects;
     }
@@ -53,8 +58,7 @@ public class DataUtil {
 
     public static String getProperties(String key) {
         Properties properties = new Properties();
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("/jproject_conf/jprojects.properties"));
+        try(BufferedReader bufferedReader = new BufferedReader(new FileReader("/jproject_conf/jprojects.properties"))) {
             properties.load(bufferedReader);
         } catch (IOException e) {
             e.printStackTrace();

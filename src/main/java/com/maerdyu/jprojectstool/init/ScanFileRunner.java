@@ -1,12 +1,14 @@
 package com.maerdyu.jprojectstool.init;
 
-import com.alibaba.fastjson.JSONObject;
 import com.maerdyu.jprojectstool.dto.JprojectsConf;
+import com.maerdyu.jprojectstool.dto.Project;
+import com.maerdyu.jprojectstool.service.GitOperateService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author jinchun
@@ -17,10 +19,19 @@ public class ScanFileRunner implements ApplicationRunner {
 
     @Resource
     private JprojectsConf jprojectsConf;
+    @Resource
+    private GitOperateService gitOperateService;
 
     @Override
     public void run(ApplicationArguments args) {
-        System.out.println(JSONObject.toJSONString(jprojectsConf));
+        List<Project> projects = jprojectsConf.getProjects();
+        projects.stream().filter(p -> "jprojects-tool".equals(p.getName())).forEach(p -> {
+            try {
+                gitOperateService.pushRemoteBranch(p, "test1");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }

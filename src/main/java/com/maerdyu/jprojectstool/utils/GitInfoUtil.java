@@ -1,7 +1,6 @@
 package com.maerdyu.jprojectstool.utils;
 
 import cn.hutool.core.util.StrUtil;
-import com.maerdyu.jprojectstool.constants.GitConstants;
 import com.maerdyu.jprojectstool.dto.Branch;
 import com.maerdyu.jprojectstool.dto.Project;
 import org.eclipse.jgit.api.Git;
@@ -13,6 +12,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +25,9 @@ import static com.maerdyu.jprojectstool.constants.GitConstants.REMOTE_GIT_PREFIX
  * @date 2021/03/02 15:18
  **/
 public class GitInfoUtil {
+
+    private GitInfoUtil() {
+    }
 
     public static Boolean isGitRepo(File f) {
         File[] files = f.listFiles();
@@ -65,7 +68,7 @@ public class GitInfoUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public static Repository genRepoByPath(Project project) throws IOException {

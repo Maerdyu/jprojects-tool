@@ -53,12 +53,11 @@ public class JprojectsConfig {
     @Bean
     @Primary
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        List<String> props = new ArrayList<>() {{
-            add(ThreadPoolConstants.CORE_SIZE);
-            add(ThreadPoolConstants.MAX_SIZE);
-            add(ThreadPoolConstants.QUEUE_SIZE);
-            add(ThreadPoolConstants.KEEP_ALIVE);
-        }};
+        List<String> props = new ArrayList<>();
+        props.add(ThreadPoolConstants.CORE_SIZE);
+        props.add(ThreadPoolConstants.MAX_SIZE);
+        props.add(ThreadPoolConstants.QUEUE_SIZE);
+        props.add(ThreadPoolConstants.KEEP_ALIVE);
         Map<String, String> pMap = DataUtil.getProperties(props);
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(Integer.parseInt(pMap.get(ThreadPoolConstants.CORE_SIZE)));
