@@ -6,12 +6,14 @@ import com.maerdyu.jprojectstool.dto.JprojectsConf;
 import com.maerdyu.jprojectstool.dto.Project;
 import com.maerdyu.jprojectstool.utils.GitInfoUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshTransport;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,7 @@ public class GitOperateService {
                     sshTransport.setSshSessionFactory(jschConfigSessionFactory);
                 });
             }
+            //TODO pull操作之后更新conf
             return command.call();
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
@@ -117,15 +120,25 @@ public class GitOperateService {
     }
 
     public void pushRemoteBranch(Project project, String branchName) {
+//        checkOutReomte(project, branchName, "origin/main");
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
              Git git = new Git(repo)) {
-            RefSpec spec = new RefSpec("refs/heads/" + branchName + ":refs/heads/" + branchName);
-            git.push().setRefSpecs(spec).setRemote("origin").setTransportConfigCallback(transport -> {
+            git.push().setRemote("origin").setRefSpecs(new RefSpec(branchName + ":" + branchName)).setTransportConfigCallback(transport -> {
                 SshTransport sshTransport = (SshTransport) transport;
                 sshTransport.setSshSessionFactory(jschConfigSessionFactory);
             }).call();
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public Project findProjectByName(String projectName) {
+        List<Project> projects = jprojectsConf.getProjects();
+        Optional<Project> any = projects.stream().filter(project -> project.getName().equals(projectName)).findFirst();
+        if (any.isPresent()) {
+            return any.get();
+        } else {
+            throw new RuntimeException("没有找到对应的项目" + projectName);
         }
     }
 

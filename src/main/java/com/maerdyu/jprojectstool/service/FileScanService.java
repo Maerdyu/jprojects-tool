@@ -18,10 +18,8 @@ public class FileScanService {
     @Resource
     private JprojectsConf jprojectsConf;
 
-    public void loadFile(String path){
-        List<Project> addProjects = DataUtil.scanFile(path, true);
-        List<Project> projects = jprojectsConf.getProjects();
-        projects.addAll(addProjects);
-
+    public void loadFile(String path) {
+        List<Project> projects = DataUtil.scanFile(path, true);
+        jprojectsConf.setProjects(projects);
     }
 }

@@ -27,7 +27,9 @@ public class ScanFileRunner implements ApplicationRunner {
         List<Project> projects = jprojectsConf.getProjects();
         projects.stream().filter(p -> "jprojects-tool".equals(p.getName())).forEach(p -> {
             try {
-                gitOperateService.pushRemoteBranch(p, "test1");
+//                gitOperateService.pushRemoteBranch(p, "test1");
+//                gitOperateService.deleteRemoteBranch(p, "origin/test1");
+                System.out.println("finish");
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -11,6 +11,7 @@ import lombok.Data;
 @Builder
 public class Branch {
     private String name;
+    private String simpleName;
     private Boolean isCurrent;
     private Boolean isRemote;
 }

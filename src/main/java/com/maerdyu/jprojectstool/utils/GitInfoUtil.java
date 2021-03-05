@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.maerdyu.jprojectstool.constants.GitConstants.LOCAL_GIT_PREFIX;
-import static com.maerdyu.jprojectstool.constants.GitConstants.REMOTE_GIT_PREFIX;
+import static com.maerdyu.jprojectstool.constants.GitConstants.*;
 
 /**
  * @author jinchun
@@ -80,13 +79,16 @@ public class GitInfoUtil {
     private static Branch buildBranchByRef(Ref ref) {
         String name = ref.getName();
         String branchName;
+        String simpleName;
         boolean isRemote = false;
         if (name.startsWith(REMOTE_GIT_PREFIX)) {
             branchName = name.replace(REMOTE_GIT_PREFIX, "");
+            simpleName = name.replace(REMOTE_GIT_PREFIX + REMOTE_BRANCH_PREFIX, "");
             isRemote = true;
         } else {
             branchName = name.replace(LOCAL_GIT_PREFIX, "");
+            simpleName = branchName;
         }
-        return Branch.builder().name(branchName).isRemote(isRemote).build();
+        return Branch.builder().name(branchName).simpleName(simpleName).isRemote(isRemote).build();
     }
 }
