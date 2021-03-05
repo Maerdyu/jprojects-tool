@@ -20,8 +20,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
+import static com.maerdyu.jprojectstool.constants.GitConstants.ORIGIN;
+import static com.maerdyu.jprojectstool.constants.GitConstants.REMOTE_BRANCH_PREFIX;
 
 /**
  * @author jinchun
@@ -35,6 +40,8 @@ public class GitOperateService {
     private JschConfigSessionFactory jschConfigSessionFactory;
     @Resource
     private JprojectsConf jprojectsConf;
+    @Resource
+    private ProjectService projectService;
 
     public PullResult pull(Project project) {
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
@@ -47,8 +54,12 @@ public class GitOperateService {
                     sshTransport.setSshSessionFactory(jschConfigSessionFactory);
                 });
             }
-            //TODO pull操作之后更新conf
-            return command.call();
+            PullResult call = command.call();
+            if (call.isSuccessful()) {
+                projectService.reloadProject(project);
+            }
+
+            return call;
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
@@ -70,6 +81,7 @@ public class GitOperateService {
                     return true;
                 }
             }
+            addConfBranch(project, branchName, branchName, false);
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
@@ -85,6 +97,7 @@ public class GitOperateService {
                 git.checkout().setCreateBranch(true).setName(branchName).setStartPoint(remoteBranchName).call();
                 return true;
             }
+            addConfBranch(project, branchName, branchName, false);
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
@@ -95,6 +108,8 @@ public class GitOperateService {
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
              Git git = new Git(repo)) {
             git.branchDelete().setBranchNames(branchNames).call();
+
+            deleteConfBranch(project, branchNames);
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
@@ -105,14 +120,16 @@ public class GitOperateService {
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
              Git git = new Git(repo)) {
             for (String branchName : branchNames) {
-                String simpleName = branchName.replace("origin/", GitConstants.LOCAL_GIT_PREFIX);
+                String simpleName = branchName.replace(REMOTE_BRANCH_PREFIX, GitConstants.LOCAL_GIT_PREFIX);
                 RefSpec refSpec = new RefSpec()
                         .setSource(null)
                         .setDestination(simpleName);
-                git.push().setRefSpecs(refSpec).setRemote("origin").setTransportConfigCallback(transport -> {
+                git.push().setRefSpecs(refSpec).setRemote(ORIGIN).setTransportConfigCallback(transport -> {
                     SshTransport sshTransport = (SshTransport) transport;
                     sshTransport.setSshSessionFactory(jschConfigSessionFactory);
                 }).call();
+
+                deleteConfBranch(project, branchName);
             }
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
@@ -123,10 +140,11 @@ public class GitOperateService {
 //        checkOutReomte(project, branchName, "origin/main");
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
              Git git = new Git(repo)) {
-            git.push().setRemote("origin").setRefSpecs(new RefSpec(branchName + ":" + branchName)).setTransportConfigCallback(transport -> {
+            git.push().setRemote(ORIGIN).setRefSpecs(new RefSpec(branchName + ":" + branchName)).setTransportConfigCallback(transport -> {
                 SshTransport sshTransport = (SshTransport) transport;
                 sshTransport.setSshSessionFactory(jschConfigSessionFactory);
             }).call();
+            addConfBranch(project, REMOTE_BRANCH_PREFIX + branchName, branchName, true);
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
@@ -135,11 +153,25 @@ public class GitOperateService {
     public Project findProjectByName(String projectName) {
         List<Project> projects = jprojectsConf.getProjects();
         Optional<Project> any = projects.stream().filter(project -> project.getName().equals(projectName)).findFirst();
-        if (any.isPresent()) {
-            return any.get();
-        } else {
-            throw new RuntimeException("没有找到对应的项目" + projectName);
-        }
+        return any.orElse(null);
     }
 
+    private void deleteConfBranch(Project project, String... branchNames) {
+        List<Branch> branches = project.getBranches();
+        Iterator<Branch> iterator = branches.iterator();
+        Stream.of(branchNames).forEach(b -> {
+            while (iterator.hasNext()) {
+                Branch next = iterator.next();
+                if (b.equals(next.getName())) {
+                    branches.remove(next);
+                }
+            }
+        });
+    }
+
+    private void addConfBranch(Project project, String name, String simpleName, Boolean isRemote) {
+        Branch branch = Branch.builder().name(name).simpleName(simpleName).isRemote(isRemote).build();
+        List<Branch> branches = project.getBranches();
+        branches.add(branch);
+    }
 }
