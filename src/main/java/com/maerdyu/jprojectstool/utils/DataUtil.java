@@ -44,7 +44,7 @@ public class DataUtil {
         return projects;
     }
 
-    private static Project buildProjectByFile(File file) {
+    public static Project buildProjectByFile(File file) {
         Project.ProjectBuilder builder = Project.builder();
         builder.path(file.getPath()).name(file.getName()).status(ProjectStatus.INIT.name());
         String remoteUrl = GitInfoUtil.getRemoteUrl(file);
