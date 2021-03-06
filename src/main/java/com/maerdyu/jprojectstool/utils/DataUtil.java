@@ -17,6 +17,9 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.maerdyu.jprojectstool.constants.FilesEnum.PROJECTS_PORPERTIES;
+import static com.maerdyu.jprojectstool.constants.GitConstants.PUBLIC_REPO_PREFIX;
+
 /**
  * @author jinchun
  * @date 2021/03/01 15:50
@@ -38,7 +41,7 @@ public class DataUtil {
         File[] files = file.listFiles();
         assert files != null;
         List<Project> projects = Stream.of(files).filter(File::isDirectory).filter(GitInfoUtil::isGitRepo).map(DataUtil::buildProjectByFile).collect(Collectors.toList());
-        if(loadConf == null || loadConf){
+        if (loadConf == null || loadConf) {
             DataUtil.writeFile(JSON.toJSONString(projects), FilesEnum.PROJECTS.getName());
         }
         return projects;
@@ -49,7 +52,7 @@ public class DataUtil {
         builder.path(file.getPath()).name(file.getName()).status(ProjectStatus.INIT.name());
         String remoteUrl = GitInfoUtil.getRemoteUrl(file);
         builder.url(remoteUrl).isPrivate(true);
-        if(remoteUrl != null && remoteUrl.contains("http")){
+        if (remoteUrl != null && remoteUrl.contains(PUBLIC_REPO_PREFIX)) {
             builder.isPrivate(false);
         }
         builder.branches(GitInfoUtil.getBranchs(file));
@@ -58,7 +61,7 @@ public class DataUtil {
 
     public static String getProperties(String key) {
         Properties properties = new Properties();
-        try(BufferedReader bufferedReader = new BufferedReader(new FileReader("/jproject_conf/jprojects.properties"))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(PROJECTS_PORPERTIES.getName()))) {
             properties.load(bufferedReader);
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,9 +69,9 @@ public class DataUtil {
         return properties.getProperty(key);
     }
 
-    public static Map<String, String> getProperties(List<String> keys){
-        Map<String, String> pMap = new HashMap<>();
-        keys.forEach(k->{
+    public static Map<String, String> getProperties(List<String> keys) {
+        Map<String, String> pMap = new HashMap<>(16);
+        keys.forEach(k -> {
             String properties = getProperties(k);
             pMap.put(k, properties);
         });

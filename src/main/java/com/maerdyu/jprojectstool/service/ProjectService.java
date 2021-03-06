@@ -18,6 +18,13 @@ public class ProjectService {
 
     @Resource
     private JprojectsConf jprojectsConf;
+    @Resource
+    private GitOperateService gitOperateService;
+
+    public void reloadProject(String projectName) {
+        Project project = gitOperateService.findProjectByName(projectName);
+        reloadProject(project);
+    }
 
     public void reloadProject(Project project) {
         String path = project.getPath();

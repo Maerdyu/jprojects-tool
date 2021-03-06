@@ -135,7 +135,6 @@ public class GitOperateService {
     }
 
     public void pushRemoteBranch(Project project, String branchName) {
-//        checkOutReomte(project, branchName, "origin/main");
         try (Repository repo = GitInfoUtil.genRepoByPath(project);
              Git git = new Git(repo)) {
             git.push().setRemote(ORIGIN).setRefSpecs(new RefSpec(branchName + ":" + branchName)).setTransportConfigCallback(transport -> {

@@ -36,7 +36,14 @@ public class BranchService {
         projectNames.forEach(projectName -> threadPoolTaskExecutor.execute(() -> checkoutBranch(projectName, branchCheckoutDTO)));
     }
 
-    public void pullBranchList(PullBranchListDTO pullBranchListDTO){
+    public void pullBranchList(PullBranchListDTO pullBranchListDTO) {
+        List<String> projectNames = pullBranchListDTO.getProjectNames();
 
+        projectNames.forEach(projectName -> threadPoolTaskExecutor.execute(() -> this.pullBranch(projectName)));
+    }
+
+    private void pullBranch(String projectName) {
+        Project project = gitOperateService.findProjectByName(projectName);
+        gitOperateService.pull(project);
     }
 }

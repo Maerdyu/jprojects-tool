@@ -1,9 +1,8 @@
 package com.maerdyu.jprojectstool.controller;
 
-import com.maerdyu.jprojectstool.dto.Project;
 import com.maerdyu.jprojectstool.dto.branch.BranchCheckoutDTO;
+import com.maerdyu.jprojectstool.dto.branch.PullBranchListDTO;
 import com.maerdyu.jprojectstool.service.BranchService;
-import com.maerdyu.jprojectstool.service.GitOperateService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -25,13 +24,18 @@ public class BranchController {
         branchService.checkoutBranch(projectName, branchCheckoutDTO);
     }
 
+    @PostMapping
+    public void checkBranchList(@RequestBody BranchCheckoutDTO branchCheckoutDTO){
+        branchService.checkoutBranchList(branchCheckoutDTO);
+    }
+
     @DeleteMapping("/{projectName}/{branchName}")
     public void deleteBranch(@PathVariable String projectName, @PathVariable String branchName) {
         branchService.deleteBranch(projectName, branchName);
     }
 
-    @PostMapping("batch/checkout")
-    public void checkoutBranchList(@RequestBody BranchCheckoutDTO branchCheckoutDTO){
-
+    @PostMapping("batch/pull")
+    public void pullBranchList(@RequestBody PullBranchListDTO pullBranchListDTO){
+        branchService.pullBranchList(pullBranchListDTO);
     }
 }
