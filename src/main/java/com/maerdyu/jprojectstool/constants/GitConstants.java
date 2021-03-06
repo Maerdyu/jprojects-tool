@@ -15,4 +15,5 @@ public class GitConstants {
     public static final String PUBLIC_REPO_PREFIX = "http";
     public static final String GIT_REPO_PROPERTIES_NAME = "filepath";
     public static final String GIT_KEY_PROPERTIES_NAME = "privateKeyPath";
+    public static final int GIT_RETRY_TIMES = 5;
 }

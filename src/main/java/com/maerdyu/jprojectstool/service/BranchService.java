@@ -1,13 +1,16 @@
 package com.maerdyu.jprojectstool.service;
 
 import com.maerdyu.jprojectstool.dto.Project;
-import com.maerdyu.jprojectstool.dto.branch.BranchCheckoutDTO;
+import com.maerdyu.jprojectstool.dto.branch.CheckoutBranchDTO;
 import com.maerdyu.jprojectstool.dto.branch.PullBranchListDTO;
+import com.maerdyu.jprojectstool.dto.branch.PushBranchDTO;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+
+import static com.maerdyu.jprojectstool.constants.GitConstants.REMOTE_BRANCH_PREFIX;
 
 /**
  * @author jinchun
@@ -21,19 +24,28 @@ public class BranchService {
     @Resource
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    public void checkoutBranch(String projectName, BranchCheckoutDTO branchCheckoutDTO) {
+    public void checkoutBranch(String projectName, CheckoutBranchDTO checkoutBranchDTO) {
         Project project = gitOperateService.findProjectByName(projectName);
-        gitOperateService.checkOutReomte(project, branchCheckoutDTO.getNewBranchName(), branchCheckoutDTO.getBranchName());
+        gitOperateService.checkOutReomte(project, checkoutBranchDTO.getNewBranchName(), checkoutBranchDTO.getBranchName());
+    }
+
+    private void checkoutBranch(Project project, String newBranchName, String remoteBranch) {
+        gitOperateService.checkOutReomte(project, newBranchName, remoteBranch);
     }
 
     public void deleteBranch(String projectName, String branchName) {
         Project project = gitOperateService.findProjectByName(projectName);
-        gitOperateService.deleteLocalBranch(project, branchName);
+        if (branchName.startsWith(REMOTE_BRANCH_PREFIX)) {
+            gitOperateService.deleteRemoteBranch(project, branchName);
+        } else {
+            gitOperateService.deleteLocalBranch(project, branchName);
+        }
+
     }
 
-    public void checkoutBranchList(BranchCheckoutDTO branchCheckoutDTO) {
-        List<String> projectNames = branchCheckoutDTO.getProjectNames();
-        projectNames.forEach(projectName -> threadPoolTaskExecutor.execute(() -> checkoutBranch(projectName, branchCheckoutDTO)));
+    public void checkoutBranchList(CheckoutBranchDTO checkoutBranchDTO) {
+        List<String> projectNames = checkoutBranchDTO.getProjectNames();
+        projectNames.forEach(projectName -> threadPoolTaskExecutor.execute(() -> checkoutBranch(projectName, checkoutBranchDTO)));
     }
 
     public void pullBranchList(PullBranchListDTO pullBranchListDTO) {
@@ -45,5 +57,13 @@ public class BranchService {
     private void pullBranch(String projectName) {
         Project project = gitOperateService.findProjectByName(projectName);
         gitOperateService.pull(project);
+    }
+
+    public void pushBranch(PushBranchDTO pushBranchDTO) {
+        String projectName = pushBranchDTO.getProjectName();
+        Project project = gitOperateService.findProjectByName(projectName);
+        String branchName = pushBranchDTO.getBranchName();
+        checkoutBranch(project, branchName, pushBranchDTO.getRemoteBranch());
+        gitOperateService.pushRemoteBranch(project, branchName);
     }
 }

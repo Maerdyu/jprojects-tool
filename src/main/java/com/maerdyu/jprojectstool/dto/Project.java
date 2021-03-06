@@ -18,4 +18,5 @@ public class Project {
     private List<Branch> branches;
     private String url;
     private String status;
+    private String errorMsg;
 }

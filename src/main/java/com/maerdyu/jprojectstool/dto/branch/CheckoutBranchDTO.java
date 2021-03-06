@@ -9,7 +9,7 @@ import java.util.List;
  * @date 2021/03/05 14:41
  **/
 @Data
-public class BranchCheckoutDTO {
+public class CheckoutBranchDTO {
     private String branchName;
     private String newBranchName;
     private List<String> projectNames;
