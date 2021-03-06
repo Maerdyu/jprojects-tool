@@ -6,11 +6,10 @@ import java.util.List;
 
 /**
  * @author jinchun
- * @date 2021/03/05 14:41
+ * @date 2021/03/06 09:03
  **/
 @Data
-public class BranchCheckoutDTO {
-    private String branchName;
-    private String newBranchName;
+public class PullBranchListDTO {
     private List<String> projectNames;
+    private Boolean diff;
 }
