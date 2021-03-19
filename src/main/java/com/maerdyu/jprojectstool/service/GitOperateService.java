@@ -82,7 +82,7 @@ public class GitOperateService {
                     Boolean isRemote = branch.getIsRemote();
                     if (Boolean.FALSE.equals(isRemote) && branchName.equals(name)) {
                         git.checkout().setCreateBranch(false).setName(branchName).call();
-                    } else if (Boolean.TRUE.equals(isRemote) && branchName.equals(name.replace("origin/", ""))) {
+                    } else if (Boolean.TRUE.equals(isRemote) && branchName.equals(name.replace(REMOTE_BRANCH_PREFIX, ""))) {
                         git.checkout().setCreateBranch(true).setName(branchName).setStartPoint(name).call();
                     }
                 }
