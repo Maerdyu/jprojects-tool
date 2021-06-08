@@ -3,6 +3,7 @@ package com.maerdyu.jprojectstool.config;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.maerdyu.jprojectstool.handler.SaxHandler;
 import com.maerdyu.jprojectstool.constants.ThreadPoolConstants;
 import com.maerdyu.jprojectstool.dto.JprojectsConf;
 import com.maerdyu.jprojectstool.dto.Project;
@@ -77,4 +78,8 @@ public class JprojectsConfig {
         return JprojectsConf.builder().projects(projects).build();
     }
 
+    @Bean
+    public SaxHandler saxHandler(){
+        return new SaxHandler();
+    }
 }
